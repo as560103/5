@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThingSpeak 控制面板（深藍色版）</title>
+  <style>
+    body {
+      background-color: #0A1F44; /* 深藍色背景 */
+      color: #f0f0f0;
+      font-family: 'Microsoft JhengHei', sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #ffffff;
+    }
+    .panel, .chart {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #1E2A47; /* 深藍色卡片背景 */
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(255,255,255,0.05);
+    }
+    .value-box {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+    }
+    .updated-time {
+      font-size: 0.9em;
+      color: #aaa;
+    }
+    iframe {
+      width: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌙 感測器數據控制面板</h2>
+
+  <div class="panel">
+    <h3>💾 即時數值</h3>
+    <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
+    <div class="value-box" id="humid">💧 濕度：-- %</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
+    <div class="value-box" id="volt">🔋 電壓：-- V</div>
+    <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
+  </div>
+
+  <div class="chart">
+    <h3>🌡️ 溫度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/1?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FFDD57"></iframe>
+  </div>
+
+  <div class="chart">
+    <h3>💧 濕度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/2?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=57D9FF"></iframe>
+  </div>
+
+   <div class="chart">
+    <h3>🌱 土壤濕度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
+  </div>
+
+  <div class="chart">
+    <h3>🔋 電壓（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
+  </div>
+
+
+  <script>
+    const apiKey = "8W2AT0OXJXZ29B22";
+    const channelID = "2925557";
+    const fields = [1, 2, 3, 4];
+    const fieldIds = ["temp", "humid", "soil", "volt"];
+
+    async function updateValues() {
+      try {
+        const res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${apiKey}`);
+        const data = await res.json();
+
+        fields.forEach((field, i) => {
+          const value = data[`field${field}`] || "--";
+          document.getElementById(fieldIds[i]).innerHTML =
+            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
+        });
+
+        const now = new Date();
+        document.getElementById("updateTime").textContent =
+          "🕒 更新時間：" + now.toLocaleString("zh-Hant-TW");
+      } catch (err) {
+        console.error("資料取得失敗", err);
+      }
+    }
+
+    function getUnit(field) {
+      switch (field) {
+        case 1: return "°C";
+        case 2: return "%";
+        case 3: return "V";
+        case 4: return "%";
+        default: return "";
+      }
+    }
+
+    // 初始載入 & 每 15 秒自動更新
+    updateValues();
+    setInterval(updateValues, 15000);
+  </script>
+
+</body>
+</html>
