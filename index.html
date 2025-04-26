@@ -51,6 +51,7 @@
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
+  <!-- ✅ 圖表區塊（依照正確順序） -->
   <div class="chart">
     <h3>🌡️ 溫度（圖表）</h3>
     <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/1?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FFDD57"></iframe>
@@ -71,6 +72,7 @@
     <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
   </div>
 
+  <!-- ✅ JavaScript 即時資料更新 -->
   <script>
     const apiKey = "8W2AT0OXJXZ29B22";
     const channelID = "2925557";
@@ -85,15 +87,15 @@
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
 
+          // 土壤濕度 → 百分比
           if (field === 3) {
-            // 土壤濕度轉換為百分比
             const raw = parseFloat(value);
             const percent = Math.round((raw / 1023) * 100);
             value = `${percent}`;
           }
 
+          // 電壓 → 小數顯示 V
           if (field === 4) {
-            // 電壓固定兩位小數
             value = parseFloat(value).toFixed(2);
           }
 
@@ -112,10 +114,10 @@
 
     function getUnit(field) {
       switch (field) {
-        case 1: return "°C";
-        case 2: return "%";
-        case 3: return "%";
-        case 4: return "V";
+        case 1: return "°C";  // 溫度
+        case 2: return "%";   // 濕度
+        case 3: return "%";   // 土壤濕度（百分比）
+        case 4: return "V";   // 電壓（伏特）
         default: return "";
       }
     }
