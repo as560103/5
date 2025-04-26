@@ -88,8 +88,8 @@
           // 土壤濕度轉換為百分比（假設 0 = 乾，1023 = 濕）
           if (field === 3 && value !== "--") {
             const raw = parseFloat(value);
-            const percent = Math.round((1 - raw / 1023) * 100); // 倒數換算
-            value = `${percent}`;
+            const percent = Math.round((raw / 1023) * 100); // 轉換為百分比
+            value = `${raw} (${percent}%)`; // 顯示原始數值與百分比
           }
 
           document.getElementById(fieldIds[i]).innerHTML =
