@@ -6,7 +6,7 @@
   <title>ThingSpeak 控制面板（深藍色版）</title>
   <style>
     body {
-      background-color: #0A1F44; /* 深藍色背景 */
+      background-color: #0A1F44;
       color: #f0f0f0;
       font-family: 'Microsoft JhengHei', sans-serif;
       padding: 20px;
@@ -19,7 +19,7 @@
     .panel, .chart {
       max-width: 600px;
       margin: 20px auto;
-      background: #1E2A47; /* 深藍色卡片背景 */
+      background: #1E2A47;
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(255,255,255,0.05);
@@ -46,8 +46,8 @@
     <h3>💾 即時數值</h3>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
-    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
-    <div class="value-box" id="volt">🔋 電壓：-- %</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
+    <div class="value-box" id="volt">🔋 電壓：-- V</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
@@ -84,11 +84,17 @@
 
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
-          if (field === 3) { // 土壤濕度的處理
-            const soilRawValue = parseFloat(value);
-            const maxSoilValue = 1023;  // 假設最大值為 1023
-            const soilPercentage = Math.round((soilRawValue / maxSoilValue) * 100);
-            value = `${soilRawValue}（${soilPercentage}%）`;
+
+          if (field === 3) {
+            // 土壤濕度轉換為百分比
+            const raw = parseFloat(value);
+            const percent = Math.round((raw / 1023) * 100);
+            value = `${percent}`;
+          }
+
+          if (field === 4) {
+            // 電壓固定兩位小數
+            value = parseFloat(value).toFixed(2);
           }
 
           document.getElementById(fieldIds[i]).innerHTML =
@@ -98,6 +104,7 @@
         const now = new Date();
         document.getElementById("updateTime").textContent =
           "🕒 更新時間：" + now.toLocaleString("zh-Hant-TW");
+
       } catch (err) {
         console.error("資料取得失敗", err);
       }
@@ -107,13 +114,12 @@
       switch (field) {
         case 1: return "°C";
         case 2: return "%";
-        case 3: return "V";
-        case 4: return "%";
+        case 3: return "%";
+        case 4: return "V";
         default: return "";
       }
     }
 
-    // 初始載入 & 每 15 秒自動更新
     updateValues();
     setInterval(updateValues, 15000);
   </script>
