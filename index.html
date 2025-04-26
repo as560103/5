@@ -44,10 +44,10 @@
 
   <div class="panel">
     <h3>💾 即時數值</h3>
-    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
-    <div class="value-box" id="volt">🔋 電壓：-- %</div>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
+    <div class="value-box" id="volt">🔋 電壓：-- %</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
@@ -84,19 +84,15 @@
 
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
-          let unit = getUnit(field);
-
-          // 處理土壤濕度，顯示原始數值並轉換為百分比
-          if (field === 3) {
+          if (field === 3) { // 土壤濕度的處理
             const soilRawValue = parseFloat(value);
             const maxSoilValue = 1023;  // 假設最大值為 1023
             const soilPercentage = Math.round((soilRawValue / maxSoilValue) * 100);
-            value = `${soilPercentage} %`;  // 顯示百分比
+            value = `${soilRawValue}（${soilPercentage}%）`;
           }
 
-          // 更新頁面中的數值
           document.getElementById(fieldIds[i]).innerHTML =
-            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${unit}`;
+            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
         });
 
         const now = new Date();
@@ -109,10 +105,10 @@
 
     function getUnit(field) {
       switch (field) {
-        case 1: return "°C";  // 溫度單位
-        case 2: return "%";   // 濕度單位
-        case 3: return "%";   // 土壤濕度顯示為百分比
-        case 4: return "%";   // 電壓顯示為百分比
+        case 1: return "°C";
+        case 2: return "%";
+        case 3: return "V";
+        case 4: return "%";
         default: return "";
       }
     }
