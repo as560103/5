@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -6,7 +7,7 @@
   <title>ThingSpeak 控制面板（深藍色版）</title>
   <style>
     body {
-      background-color: #0A1F44;
+      background-color: #0A1F44; /* 深藍色背景 */
       color: #f0f0f0;
       font-family: 'Microsoft JhengHei', sans-serif;
       padding: 20px;
@@ -19,7 +20,7 @@
     .panel, .chart {
       max-width: 600px;
       margin: 20px auto;
-      background: #1E2A47;
+      background: #1E2A47; /* 深藍色卡片背景 */
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(255,255,255,0.05);
@@ -46,8 +47,8 @@
     <h3>💾 即時數值</h3>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
-    <div class="value-box" id="soil">🌱 土壤濕度：--</div>
     <div class="value-box" id="volt">🔋 電壓：-- V</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
@@ -62,20 +63,20 @@
   </div>
 
   <div class="chart">
-    <h3>🌱 土壤濕度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
+    <h3>🔋 電壓（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
   </div>
 
   <div class="chart">
-    <h3>🔋 電壓（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
+    <h3>🌱 土壤濕度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
   </div>
 
   <script>
     const apiKey = "8W2AT0OXJXZ29B22";
     const channelID = "2925557";
-    const fields = [1, 2, 4, 3]; // 溫度、濕度、土壤濕度、電壓
-    const fieldIds = ["temp", "humid", "soil", "volt"];
+    const fields = [1, 2, 4, 3]; // 注意順序：電壓 field4、土壤濕度 field3
+    const fieldIds = ["temp", "humid", "volt", "soil"];
 
     async function updateValues() {
       try {
@@ -85,14 +86,15 @@
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
 
-          if (field === 4 && value !== "--") {
-            const soilRaw = parseFloat(value);
-            const soilPercent = Math.round((soilRaw / 1023) * 100);
-            value = `${soilRaw}（${soilPercent}%）`;
+          // 土壤濕度轉換為百分比（假設 0 = 乾，1023 = 濕）
+          if (field === 3 && value !== "--") {
+            const raw = parseFloat(value);
+            const percent = Math.round((raw / 1023) * 100); // 轉換為百分比
+            value = `${raw} (${percent}%)`; // 顯示原始數值與百分比
           }
 
           document.getElementById(fieldIds[i]).innerHTML =
-            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
+            `${getLabel(field)}：${value} ${getUnit(field)}`;
         });
 
         const now = new Date();
@@ -100,19 +102,31 @@
           "🕒 更新時間：" + now.toLocaleString("zh-Hant-TW");
       } catch (err) {
         console.error("資料取得失敗", err);
+        document.getElementById("updateTime").textContent = "⚠️ 資料取得失敗";
       }
     }
 
     function getUnit(field) {
       switch (field) {
-        case 1: return "°C"; // 溫度
-        case 2: return "%";  // 濕度
-        case 3: return "V";  // 電壓
-        case 4: return "";   // 土壤濕度顯示在 value 中的括號
+        case 1: return "°C";
+        case 2: return "%";
+        case 3: return "%"; // 土壤濕度轉為百分比
+        case 4: return "V"; // 電壓為伏特
         default: return "";
       }
     }
 
+    function getLabel(field) {
+      switch (field) {
+        case 1: return "🌡️ 溫度";
+        case 2: return "💧 濕度";
+        case 3: return "🌱 土壤濕度";
+        case 4: return "🔋 電壓";
+        default: return "";
+      }
+    }
+
+    // 初始載入 & 每 15 秒自動更新
     updateValues();
     setInterval(updateValues, 15000);
   </script>
