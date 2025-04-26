@@ -11,6 +11,11 @@
       font-family: 'Microsoft JhengHei', sans-serif;
       padding: 20px;
       margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* 使所有內容居中 */
+      justify-content: center; /* 使內容垂直居中 */
+      height: 100vh; /* 使整個頁面填滿視窗 */
     }
     h2, h3 {
       text-align: center;
@@ -31,6 +36,18 @@
     .updated-time {
       font-size: 0.9em;
       color: #aaa;
+    }
+    .chart {
+      display: flex;
+      justify-content: center; /* 使圖表居中 */
+      margin: 20px auto;
+      max-width: 600px;
+      width: 100%;
+    }
+    iframe {
+      width: 100%;
+      border: none;
+      max-width: 600px; /* 限制 iframe 的最大寬度 */
     }
   </style>
 </head>
