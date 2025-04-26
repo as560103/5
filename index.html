@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>感測器數據控制面板</title>
+  <title>ThingSpeak 控制面板（深藍色版）</title>
   <style>
     body {
       background-color: #0A1F44; /* 深藍色背景 */
@@ -11,17 +11,12 @@
       font-family: 'Microsoft JhengHei', sans-serif;
       padding: 20px;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center; /* 使所有內容居中 */
-      justify-content: center; /* 使內容垂直居中 */
-      height: 100vh; /* 使整個頁面填滿視窗 */
     }
     h2, h3 {
       text-align: center;
       color: #ffffff;
     }
-    .panel {
+    .panel, .chart {
       max-width: 600px;
       margin: 20px auto;
       background: #1E2A47; /* 深藍色卡片背景 */
@@ -37,17 +32,9 @@
       font-size: 0.9em;
       color: #aaa;
     }
-    .chart {
-      display: flex;
-      justify-content: center; /* 使圖表居中 */
-      margin: 20px auto;
-      max-width: 600px;
-      width: 100%;
-    }
     iframe {
       width: 100%;
       border: none;
-      max-width: 600px; /* 限制 iframe 的最大寬度 */
     }
   </style>
 </head>
@@ -57,7 +44,6 @@
 
   <div class="panel">
     <h3>💾 即時數值</h3>
-    <!-- 更新順序：溫度 -> 濕度 -> 土壤濕度 -> 電壓 -->
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
     <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
@@ -97,7 +83,14 @@
         const data = await res.json();
 
         fields.forEach((field, i) => {
-          const value = data[`field${field}`] || "--";
+          let value = data[`field${field}`] || "--";
+          if (field === 3) { // 土壤濕度的處理
+            const soilRawValue = parseFloat(value);
+            const maxSoilValue = 1023;  // 假設最大值為 1023
+            const soilPercentage = Math.round((soilRawValue / maxSoilValue) * 100);
+            value = `${soilRawValue}（${soilPercentage}%）`;
+          }
+
           document.getElementById(fieldIds[i]).innerHTML =
             `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
         });
@@ -112,10 +105,10 @@
 
     function getUnit(field) {
       switch (field) {
-        case 1: return "°C";  // 溫度
-        case 2: return "%";   // 濕度
-        case 3: return "V";   // 土壤濕度
-        case 4: return "%";   // 電壓
+        case 1: return "°C";
+        case 2: return "%";
+        case 3: return "V";
+        case 4: return "%";
         default: return "";
       }
     }
