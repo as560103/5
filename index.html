@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ThingSpeak 控制面板（深藍色版）</title>
+  <title>ThingSpeak 控制面板（修正版）</title>
   <style>
     body {
       background-color: #0A1F44;
@@ -51,7 +51,7 @@
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
-  <!-- ✅ 正確順序的圖表 -->
+  <!-- ✅ 正確圖表順序 -->
   <div class="chart">
     <h3>🌡️ 溫度（圖表）</h3>
     <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/1?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FFDD57"></iframe>
@@ -75,7 +75,9 @@
   <script>
     const apiKey = "8W2AT0OXJXZ29B22";
     const channelID = "2925557";
-    const fields = [1, 2, 3, 4];
+
+    // field1: 溫度, field2: 濕度, field3: 電壓, field4: 土壤濕度
+    const fields = [1, 2, 4, 3];
     const fieldIds = ["temp", "humid", "soil", "volt"];
 
     async function updateValues() {
@@ -86,15 +88,13 @@
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
 
-          // 土壤濕度轉換為百分比
-          if (field === 3 && value !== "--") {
+          if (field === 4 && value !== "--") { // 土壤濕度轉 %
             const raw = parseFloat(value);
             const percent = Math.round((raw / 1023) * 100);
             value = `${percent}`;
           }
 
-          // 電壓保留兩位小數
-          if (field === 4 && value !== "--") {
+          if (field === 3 && value !== "--") { // 電壓保留兩位
             value = parseFloat(value).toFixed(2);
           }
 
@@ -113,10 +113,10 @@
 
     function getUnit(field) {
       switch (field) {
-        case 1: return "°C";
-        case 2: return "%";
-        case 3: return "%";
-        case 4: return "V";
+        case 1: return "°C"; // 溫度
+        case 2: return "%";  // 濕度
+        case 4: return "%";  // 土壤濕度
+        case 3: return "V";  // 電壓
         default: return "";
       }
     }
