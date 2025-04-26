@@ -46,8 +46,8 @@
     <h3>💾 即時數值</h3>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
-    <div class="value-box" id="volt">🔋 電壓：-- V</div>
-    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
+    <div class="value-box" id="volt">🔋 電壓：-- %</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
@@ -62,20 +62,20 @@
   </div>
 
   <div class="chart">
-    <h3>🔋 電壓（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
+    <h3>🌱 土壤濕度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
   </div>
 
   <div class="chart">
-    <h3>🌱 土壤濕度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
+    <h3>🔋 電壓（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
   </div>
 
   <script>
     const apiKey = "8W2AT0OXJXZ29B22";
     const channelID = "2925557";
-    const fields = [1, 2, 4, 3]; // 注意順序：電壓 field4、土壤濕度 field3
-    const fieldIds = ["temp", "humid", "volt", "soil"];
+    const fields = [1, 2, 3, 4];
+    const fieldIds = ["temp", "humid", "soil", "volt"];
 
     async function updateValues() {
       try {
@@ -84,16 +84,15 @@
 
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
-
-          // 土壤濕度轉換為百分比（假設 0 = 乾，1023 = 濕）
-          if (field === 3 && value !== "--") {
-            const raw = parseFloat(value);
-            const percent = Math.round((raw / 1023) * 100); // 轉換為百分比
-            value = `${raw} (${percent}%)`; // 顯示原始數值與百分比
+          if (field === 3) { // 土壤濕度的處理
+            const soilRawValue = parseFloat(value);
+            const maxSoilValue = 1023;  // 假設最大值為 1023
+            const soilPercentage = Math.round((soilRawValue / maxSoilValue) * 100);
+            value = `${soilRawValue}（${soilPercentage}%）`;
           }
 
           document.getElementById(fieldIds[i]).innerHTML =
-            `${getLabel(field)}：${value} ${getUnit(field)}`;
+            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
         });
 
         const now = new Date();
@@ -101,7 +100,6 @@
           "🕒 更新時間：" + now.toLocaleString("zh-Hant-TW");
       } catch (err) {
         console.error("資料取得失敗", err);
-        document.getElementById("updateTime").textContent = "⚠️ 資料取得失敗";
       }
     }
 
@@ -109,18 +107,8 @@
       switch (field) {
         case 1: return "°C";
         case 2: return "%";
-        case 3: return "%"; // 土壤濕度轉為百分比
-        case 4: return "V"; // 電壓為伏特
-        default: return "";
-      }
-    }
-
-    function getLabel(field) {
-      switch (field) {
-        case 1: return "🌡️ 溫度";
-        case 2: return "💧 濕度";
-        case 3: return "🌱 土壤濕度";
-        case 4: return "🔋 電壓";
+        case 3: return "V";
+        case 4: return "%";
         default: return "";
       }
     }
