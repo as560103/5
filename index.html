@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ThingSpeak 控制面板（深藍色版）</title>
+  <title>ThingSpeak 控制面板（開關控制）</title>
   <style>
     body {
       background-color: #0A1F44; /* 深藍色背景 */
@@ -16,7 +16,7 @@
       text-align: center;
       color: #ffffff;
     }
-    .panel, .chart {
+    .panel {
       max-width: 600px;
       margin: 20px auto;
       background: #1E2A47; /* 深藍色卡片背景 */
@@ -36,6 +36,19 @@
       width: 100%;
       border: none;
     }
+    button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -46,36 +59,23 @@
     <h3>💾 即時數值</h3>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
-    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
-    <div class="value-box" id="volt">🔋 電壓：-- %</div>
+    <div class="value-box" id="volt">🔋 電壓：-- V</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- %</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
-  <div class="chart">
-    <h3>🌡️ 溫度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/1?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FFDD57"></iframe>
-  </div>
-
-  <div class="chart">
-    <h3>💧 濕度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/2?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=57D9FF"></iframe>
-  </div>
-
-  <div class="chart">
-    <h3>🌱 土壤濕度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
-  </div>
-
-  <div class="chart">
-    <h3>🔋 電壓（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
+  <div class="panel">
+    <h3>🟢 控制開關</h3>
+    <button id="toggleBtn">🔘 開</button>
   </div>
 
   <script>
-    const apiKey = "8W2AT0OXJXZ29B22";
-    const channelID = "2925557";
+    const apiKey = "你的WriteAPIKey";
+    const channelID = "你的ChannelID";
     const fields = [1, 2, 3, 4];
-    const fieldIds = ["temp", "humid", "soil", "volt"];
+    const fieldIds = ["temp", "humid", "volt", "soil"]; // 順序已調整
+
+    let switchState = 0; // 預設為關
 
     async function updateValues() {
       try {
@@ -84,15 +84,15 @@
 
         fields.forEach((field, i) => {
           let value = data[`field${field}`] || "--";
-          if (field === 3) { // 土壤濕度的處理
+          if (field === 3) { // 土壤濕度的處理，百分比
             const soilRawValue = parseFloat(value);
             const maxSoilValue = 1023;  // 假設最大值為 1023
             const soilPercentage = Math.round((soilRawValue / maxSoilValue) * 100);
-            value = `${soilRawValue}（${soilPercentage}%）`;
+            value = `${soilPercentage} %`; // 顯示為百分比
           }
 
           document.getElementById(fieldIds[i]).innerHTML =
-            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value} ${getUnit(field)}`;
+            `${document.getElementById(fieldIds[i]).innerHTML.split("：")[0]}：${value}`;
         });
 
         const now = new Date();
@@ -103,15 +103,21 @@
       }
     }
 
-    function getUnit(field) {
-      switch (field) {
-        case 1: return "°C";
-        case 2: return "%";
-        case 3: return "V";
-        case 4: return "%";
-        default: return "";
+    // 開關控制函數
+    async function toggleSwitch() {
+      switchState = switchState === 0 ? 1 : 0;
+      const label = switchState ? "🔴 關" : "🔘 開";
+      document.getElementById("toggleBtn").textContent = label;
+
+      try {
+        await fetch(`https://api.thingspeak.com/update?api_key=${apiKey}&field5=${switchState}`);
+        console.log("開關狀態已更新：" + switchState);
+      } catch (e) {
+        console.error("開關寫入失敗", e);
       }
     }
+
+    document.getElementById("toggleBtn").addEventListener("click", toggleSwitch);
 
     // 初始載入 & 每 15 秒自動更新
     updateValues();
