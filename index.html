@@ -46,8 +46,8 @@
     <h3>💾 即時數值</h3>
     <div class="value-box" id="temp">🌡️ 溫度：-- °C</div>
     <div class="value-box" id="humid">💧 濕度：-- %</div>
-    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
     <div class="value-box" id="volt">🔋 電壓：-- %</div>
+    <div class="value-box" id="soil">🌱 土壤濕度：-- V</div>
     <div class="updated-time" id="updateTime">🕒 更新時間：--</div>
   </div>
 
@@ -61,22 +61,21 @@
     <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/2?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=57D9FF"></iframe>
   </div>
 
-   <div class="chart">
-    <h3>🌱 土壤濕度（圖表）</h3>
-    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
-  </div>
-
   <div class="chart">
     <h3>🔋 電壓（圖表）</h3>
     <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/3?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=77FF57"></iframe>
   </div>
 
+  <div class="chart">
+    <h3>🌱 土壤濕度（圖表）</h3>
+    <iframe height="260" src="https://thingspeak.com/channels/2925557/charts/4?api_key=8W2AT0OXJXZ29B22&dynamic=true&bgcolor=000000&color=FF579D"></iframe>
+  </div>
 
   <script>
     const apiKey = "8W2AT0OXJXZ29B22";
     const channelID = "2925557";
-    const fields = [1, 2, 3, 4];
-    const fieldIds = ["temp", "humid", "soil", "volt"];
+    const fields = [1, 2, 4, 3]; // 調整順序：電壓在前、土壤濕度在後
+    const fieldIds = ["temp", "humid", "volt", "soil"];
 
     async function updateValues() {
       try {
